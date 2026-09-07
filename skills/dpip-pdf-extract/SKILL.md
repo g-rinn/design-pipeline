@@ -12,7 +12,7 @@ and the textual content.
 ## Manifest lineage
 
 This skill is an operational derivative of the human requirements in
-`C:\dev\direct-import\human-manifests\dpip-manifest.md` version `0.2`, interpreted through
+`C:\dev\direct-import\human-manifests\dpip-manifest.md` version `0.4`, interpreted through
 `C:\dev\direct-import\dpip\README.md`.
 
 PDF extraction supplies evidence for later human-controlled decisions; it must not imply that a

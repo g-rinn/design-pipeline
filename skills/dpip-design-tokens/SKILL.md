@@ -13,7 +13,7 @@ consistent across every operation.
 ## Manifest lineage
 
 This skill is an operational derivative of the human requirements in
-`C:\dev\direct-import\human-manifests\dpip-manifest.md` version `0.2`, interpreted through
+`C:\dev\direct-import\human-manifests\dpip-manifest.md` version `0.4`, interpreted through
 `C:\dev\direct-import\dpip\README.md` and constrained by
 `C:\dev\direct-import\dpip\core-guardrails.md` and `contract.json`.
 
@@ -105,7 +105,13 @@ canonical `tokens`, `layers`, `usage`, `gaps`, and `meta.confidence`. Audit-only
 The executable reference implementation is `C:\dev\direct-import\dpip\compile_tokens.py`.
 For `create`/`extract`, use the compiler to produce the token tree; the agent may explain or
 report the result but must not author an alternative token tree by free-form reasoning. The
-compiler has no Penpot access and accepts only one observations document and one output path.
+compiler has no Penpot access and accepts one observations document, one output path, an optional
+source-inventory handoff, and an optional generic human-approved token-proposals document.
+
+Approved proposals are component-property records, not component-specific compiler rules. Each
+record supplies the component token path, primitive path, semantic path, type, value, usage,
+confidence, basis, and approval status. The same contract applies to Button, Dropdown, Input,
+and any other component; no object type receives an implicit fallback.
 
 ## Normalization rules
 
@@ -130,6 +136,14 @@ Input order, object-key order, screenshot position, and model narration MUST NOT
 result.
 
 ## Fact classes and inclusion matrix
+
+Relevance is decided by the image processor (upstream `dpip-image-extract`), not re-derived
+here. A fact that the processor identifies as a **relevant asset** (a concrete reusable
+component instance, i.e. a `variantMatrix` entry with a typed `observed` color) MUST produce a
+token. A fact that is only **declarative or non-relevant** (a comment, annotation, measurement
+guide, placeholder imagery, or documentation-only content) MUST NOT produce a token. When in
+doubt, the `variantMatrix` is the authoritative relevant-asset list: a typed control color
+observed there is emitted as a primitive even if the palette did not list it separately.
 
 Classify every candidate fact exactly once before token derivation:
 
@@ -220,7 +234,7 @@ and return exactly one result: `exclude`, `gap`, or `emit`.
 | 1 | class is `documentation-only` or `measurement-only` and no approved control usage exists | `exclude` |
 | 2 | class is `unknown`, required type is missing, or role is ambiguous | `gap` |
 | 3 | class is eligible but no concrete component/property usage exists | `exclude` |
-| 4 | color is a typed control fill, stroke, text, or icon color | `emit primitive` |
+| 4 | color is a typed control fill, stroke, text, or icon color | `emit primitive` (promote any concrete `variantMatrix`-observed color not already in the palette) |
 | 5 | typography is a typed reusable control text style | `emit primitive` |
 | 6 | spacing is explicitly measured or occurs on at least two reusable controls | `emit primitive` |
 | 7 | radius is explicit or occurs on at least two reusable controls | `emit primitive` |

@@ -16,7 +16,7 @@ image, and never inherit the decision from a historical run.
 ## Manifest lineage
 
 This skill is an operational derivative of the human requirements in
-`C:\dev\direct-import\human-manifests\dpip-manifest.md` version `0.2`, interpreted through
+`C:\dev\direct-import\human-manifests\dpip-manifest.md` version `0.4`, interpreted through
 `C:\dev\direct-import\dpip\README.md`.
 
 Its observations are evidence for human-controlled downstream decisions. It must preserve
@@ -24,9 +24,16 @@ source-dependent uncertainty and must not silently turn missing semantic or inte
 into asserted component structure. Reports and observation artefacts are evidence, not new
 requirements.
 
-Record the exact Manifest version used for the observation run. Do not use an unqualified "latest"
-reference for execution or replay; later Manifest versions require impact review before new
-observations are used downstream.
+Record the exact Manifest version used for the observation run. Read the explicit `Version:` field
+from the supplied manifest before processing; do not use an unqualified "latest" reference or a
+stale version embedded in this skill. An explicitly approved historical pin may override the
+current manifest, but only when the caller supplies that pin and records the compatibility decision.
+Later Manifest versions require impact review before new observations are used downstream.
+
+When a Step 1 `source-inventory.json` is supplied, validate it against the current source directory
+before inspecting images. Copy its exact file metadata into observation provenance; do not replace
+known byte counts, dimensions, or hashes with `unknown`. The inventory is source identity only and
+must not be used as a substitute for fresh visual observation, prior observations, or token output.
 
 ## Output contract
 
@@ -39,6 +46,13 @@ all observed variant axes, every observed combination of axis values, confidence
 `approx` markers for estimates. Where the source supports it, record layout direction and
 sizing behaviour separately from raw geometry.
 
+The `variantMatrix.entries` handoff is the token compiler's component-property evidence
+contract. Every entry used for token derivation MUST be a concrete object with a string
+`component`, a structured `properties` object, an `observed` object, `evidence`, confidence,
+and approximation status. A family-level summary string such as "all observed axes" is not a
+valid substitute and must remain a separate coverage record or gap; it must never be the only
+variantMatrix entry.
+
 ## Completeness rules
 
 1. Do not reduce a state matrix to a `variantsObserved` list only.
@@ -50,6 +64,18 @@ sizing behaviour separately from raw geometry.
 5. State-specific fills, labels, strokes, icon treatment, opacity, borders, and loading,
    selected, or disabled clues must be recorded separately where visible.
 6. Keep `observed`, `interpreted`, and `unknown` separate.
+
+## Relevance
+
+Classify every observed asset as **relevant** or **non-relevant**, and record it explicitly.
+
+- **Relevant** — a reusable UI control or a value applied on one (a concrete `variantMatrix`
+  entry with a typed `observed` fill/stroke/typography/spacing). A relevant value MUST reach the
+  token stage: record every distinct state color (e.g. default, hover/focus, disabled red) as its
+  own observed fill rather than collapsing them into one palette entry.
+- **Non-relevant** — declarative content only: comments, annotations, measurement guides,
+  placeholder imagery, documentation-only or specimen-background colors. Mark these in `palette`
+  with evidence text that does not name a reusable control so the compiler excludes them.
 
 ## Evidence format
 
